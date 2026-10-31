@@ -1,0 +1,3710 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+
+<title>Panel Admin | NAFA.FASHION</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+/* =================================
+   BAGIAN CSS 1 - DASAR
+================================= */
+
+:root {
+  --putih: #ffffff;
+  --latar: #f5f8f4;
+  --hijau: #4f8758;
+  --hijau-gelap: #356b40;
+  --hijau-muda: #eaf3e8;
+  --teks: #202820;
+  --abu: #818981;
+  --garis: #e7ece5;
+  --merah: #d94c4c;
+  --kuning: #e9a83b;
+  --radius: 16px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: var(--latar);
+  color: var(--teks);
+  min-height: 100vh;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+input,
+select,
+textarea {
+  outline: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* =================================
+   BAGIAN 2 - KOMPONEN DASAR
+================================= */
+
+/* NOTIFIKASI */
+
+#wadahNotifikasi {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 9999;
+  width: min(340px, calc(100% - 32px));
+  display: grid;
+  gap: 10px;
+}
+
+.notifikasi {
+  background: #263d29;
+  color: white;
+  padding: 14px 17px;
+  border-radius: 12px;
+  font-size: 13px;
+  box-shadow: 0 8px 25px #00000015;
+  animation: notifikasiMuncul .25s ease;
+}
+
+.notifikasi.gagal {
+  background: var(--merah);
+}
+
+@keyframes notifikasiMuncul {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* TOMBOL */
+
+.tombol-utama {
+  border: none;
+  background: var(--hijau);
+  color: white;
+  padding: 13px 18px;
+  border-radius: 11px;
+  font-weight: bold;
+  transition: .2s;
+}
+
+.tombol-utama:hover {
+  background: var(--hijau-gelap);
+}
+
+.tombol-sekunder {
+  border: 1px solid var(--garis);
+  background: white;
+  color: var(--teks);
+  padding: 12px 17px;
+  border-radius: 11px;
+  font-weight: bold;
+}
+
+.tombol-bahaya {
+  border: none;
+  background: #fff0ef;
+  color: var(--merah);
+  padding: 11px 15px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+/* INPUT */
+
+.grup-input {
+  margin-bottom: 18px;
+}
+
+.grup-input label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.grup-input input,
+.grup-input select,
+.grup-input textarea {
+  width: 100%;
+  border: 1px solid var(--garis);
+  border-radius: 11px;
+  padding: 13px;
+  background: #fcfdfb;
+  color: var(--teks);
+}
+
+.grup-input input:focus,
+.grup-input select:focus,
+.grup-input textarea:focus {
+  border-color: var(--hijau);
+}
+
+.grup-input textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* KARTU */
+
+.kartu {
+  background: var(--putih);
+  border: 1px solid var(--garis);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.teks-bantuan {
+  color: var(--abu);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* LABEL STATUS */
+
+.label-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: bold;
+  background: var(--hijau-muda);
+  color: var(--hijau-gelap);
+}
+
+.label-status.merah {
+  background: #fff0ef;
+  color: var(--merah);
+}
+
+.label-status.kuning {
+  background: #fff6e6;
+  color: #a87319;
+}
+
+/* RESPONSIF */
+
+@media (max-width: 600px) {
+  .kartu {
+    padding: 16px;
+  }
+
+  .tombol-utama,
+  .tombol-sekunder {
+    font-size: 13px;
+  }
+}
+
+
+/* =================================
+   BAGIAN 3 - LOGIN DAN DASHBOARD
+================================= */
+
+/* HALAMAN LOGIN */
+
+.halaman-login {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 22px;
+}
+
+.kartu-login {
+  width: 100%;
+  max-width: 410px;
+  background: white;
+  border: 1px solid var(--garis);
+  border-radius: 22px;
+  padding: 32px;
+  box-shadow: 0 12px 40px #263d2908;
+}
+
+.logo-login {
+  width: 55px;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 17px;
+  background: var(--hijau-muda);
+  color: var(--hijau-gelap);
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 25px;
+}
+
+.judul-login {
+  font-size: 25px;
+  margin-bottom: 9px;
+}
+
+.deskripsi-login {
+  color: var(--abu);
+  font-size: 13px;
+  line-height: 1.7;
+  margin-bottom: 27px;
+}
+
+.pesan-login {
+  color: var(--merah);
+  font-size: 12px;
+  margin-top: 13px;
+  min-height: 16px;
+}
+
+.catatan-login {
+  border-top: 1px solid var(--garis);
+  margin-top: 25px;
+  padding-top: 18px;
+  text-align: center;
+  color: var(--abu);
+  font-size: 11px;
+}
+
+/* KERANGKA DASHBOARD */
+
+.panel-admin {
+  display: none;
+  min-height: 100vh;
+}
+
+.panel-admin.aktif {
+  display: block;
+}
+
+/* HEADER */
+
+.header-admin {
+  height: 72px;
+  background: white;
+  border-bottom: 1px solid var(--garis);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.brand-admin {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-admin {
+  width: 39px;
+  height: 39px;
+  border-radius: 12px;
+  background: var(--hijau-muda);
+  color: var(--hijau-gelap);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.brand-admin strong {
+  font-size: 15px;
+}
+
+.brand-admin span {
+  display: block;
+  color: var(--abu);
+  font-size: 10px;
+  margin-top: 3px;
+}
+
+.tombol-keluar {
+  background: #fff0ef;
+  color: var(--merah);
+  border: none;
+  padding: 10px 15px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* AREA UTAMA */
+
+.layout-admin {
+  display: flex;
+  min-height: calc(100vh - 72px);
+}
+
+/* NAVIGASI */
+
+.sidebar-admin {
+  width: 245px;
+  flex-shrink: 0;
+  background: white;
+  border-right: 1px solid var(--garis);
+  padding: 25px 16px;
+}
+
+.label-menu {
+  font-size: 10px;
+  color: var(--abu);
+  font-weight: bold;
+  letter-spacing: 1px;
+  margin: 5px 12px 15px;
+}
+
+.menu-admin {
+  display: grid;
+  gap: 6px;
+}
+
+.menu-admin button {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #6d786d;
+  padding: 13px 14px;
+  text-align: left;
+  border-radius: 11px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.menu-admin button:hover {
+  background: #f5f8f4;
+}
+
+.menu-admin button.aktif {
+  background: var(--hijau-muda);
+  color: var(--hijau-gelap);
+  font-weight: bold;
+}
+
+/* KONTEN */
+
+.konten-admin {
+  flex: 1;
+  min-width: 0;
+  padding: 30px;
+}
+
+.halaman-konten {
+  display: none;
+}
+
+.halaman-konten.aktif {
+  display: block;
+}
+
+.judul-halaman {
+  margin-bottom: 25px;
+}
+
+.judul-halaman h1 {
+  font-size: 25px;
+  margin-bottom: 7px;
+}
+
+.judul-halaman p {
+  font-size: 13px;
+  color: var(--abu);
+  line-height: 1.6;
+}
+
+/* KARTU STATISTIK */
+
+.grid-statistik {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.kartu-statistik {
+  background: white;
+  border: 1px solid var(--garis);
+  border-radius: 15px;
+  padding: 19px;
+  min-width: 0;
+}
+
+.statistik-label {
+  color: var(--abu);
+  font-size: 12px;
+  margin-bottom: 14px;
+}
+
+.statistik-angka {
+  font-size: 25px;
+  font-weight: bold;
+  overflow-wrap: anywhere;
+}
+
+.statistik-catatan {
+  font-size: 11px;
+  color: var(--abu);
+  margin-top: 9px;
+}
+
+/* AREA KONTEN */
+
+.area-konten {
+  background: white;
+  border: 1px solid var(--garis);
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 20px;
+}
+
+.judul-area {
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 18px;
+}
+
+/* RESPONSIF */
+
+@media (max-width: 950px) {
+  .grid-statistik {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sidebar-admin {
+    width: 210px;
+  }
+
+  .konten-admin {
+    padding: 22px;
+  }
+}
+
+@media (max-width: 650px) {
+  .header-admin {
+    height: 64px;
+    padding: 0 16px;
+  }
+
+  .layout-admin {
+    display: block;
+    min-height: calc(100vh - 64px);
+  }
+
+  .sidebar-admin {
+    width: 100%;
+    padding: 10px 12px;
+    border-right: none;
+    border-bottom: 1px solid var(--garis);
+    overflow-x: auto;
+  }
+
+  .label-menu {
+    display: none;
+  }
+
+  .menu-admin {
+    display: flex;
+    width: max-content;
+    gap: 7px;
+  }
+
+  .menu-admin button {
+    width: auto;
+    white-space: nowrap;
+    padding: 11px 13px;
+    font-size: 12px;
+  }
+
+  .konten-admin {
+    padding: 20px 14px;
+  }
+
+  .judul-halaman h1 {
+    font-size: 22px;
+  }
+
+  .grid-statistik {
+    gap: 10px;
+  }
+
+  .kartu-statistik {
+    padding: 14px;
+  }
+
+  .statistik-angka {
+    font-size: 21px;
+  }
+
+  .kartu-login {
+    padding: 25px 21px;
+  }
+}
+
+/* =================================
+   BAGIAN 6 - FORMULIR PRODUK
+================================= */
+
+.form-produk {
+  display: none;
+  background: white;
+  border: 1px solid var(--garis);
+  border-radius: 15px;
+  padding: 22px;
+  margin-bottom: 22px;
+}
+
+.form-produk.terbuka {
+  display: block;
+}
+
+.kepala-form {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.kepala-form h3 {
+  font-size: 17px;
+}
+
+.grid-form-produk {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+}
+
+.form-lebar {
+  grid-column: 1 / -1;
+}
+
+.pratinjau-foto {
+  width: 100%;
+  max-width: 150px;
+  height: 150px;
+  border: 1px dashed #b9cbb6;
+  border-radius: 12px;
+  background: #f7faf5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--abu);
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+.pratinjau-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.aksi-form {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* JENDELA KONFIRMASI DALAM HALAMAN */
+
+.lapisan-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: rgba(25, 40, 26, .42);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.lapisan-modal.aktif {
+  display: flex;
+}
+
+.kotak-modal {
+  width: 100%;
+  max-width: 410px;
+  background: white;
+  border-radius: 18px;
+  padding: 25px;
+  box-shadow: 0 20px 60px #00000020;
+  animation: modalMuncul .2s ease;
+}
+
+@keyframes modalMuncul {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.ikon-modal {
+  width: 45px;
+  height: 45px;
+  border-radius: 13px;
+  background: #fff0ef;
+  color: var(--merah);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+  margin-bottom: 17px;
+}
+
+.kotak-modal h3 {
+  font-size: 18px;
+  margin-bottom: 9px;
+}
+
+.kotak-modal p {
+  color: var(--abu);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.aksi-modal {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 24px;
+}
+
+/* RESPONSIF */
+
+@media (max-width: 600px) {
+  .grid-form-produk {
+    grid-template-columns: 1fr;
+  }
+
+  .form-lebar {
+    grid-column: auto;
+  }
+
+  .form-produk {
+    padding: 16px;
+  }
+
+  .aksi-form button,
+  .aksi-modal button {
+    flex: 1;
+  }
+
+  .kotak-modal {
+    padding: 21px;
+  }
+}
+  
+  /* =================================
+   BAGIAN 5 - TABEL DAN PENCARIAN
+================================= */
+
+/* KEPALA HALAMAN */
+
+.header-konten {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.header-konten h2 {
+  font-size: 17px;
+}
+
+.header-konten p {
+  color: var(--abu);
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+/* AREA ALAT */
+
+.alat-data {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.kelompok-pencarian {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  gap: 10px;
+}
+
+.input-pencarian {
+  width: 100%;
+  max-width: 320px;
+  height: 42px;
+  border: 1px solid var(--garis);
+  border-radius: 10px;
+  background: #fcfdfb;
+  padding: 0 13px;
+  font-size: 12px;
+  color: var(--teks);
+}
+
+.input-pencarian:focus {
+  border-color: var(--hijau);
+}
+
+.filter-data {
+  height: 42px;
+  min-width: 135px;
+  border: 1px solid var(--garis);
+  border-radius: 10px;
+  background: white;
+  padding: 0 12px;
+  color: var(--teks);
+  font-size: 12px;
+}
+
+/* TABEL */
+
+.wadah-tabel {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--garis);
+  border-radius: 12px;
+  background: white;
+}
+
+.tabel-data {
+  width: 100%;
+  min-width: 650px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.tabel-data th {
+  background: #f7f9f6;
+  color: var(--abu);
+  font-size: 11px;
+  font-weight: bold;
+  text-align: left;
+  padding: 15px 14px;
+  white-space: nowrap;
+}
+
+.tabel-data td {
+  padding: 14px;
+  border-top: 1px solid var(--garis);
+  vertical-align: middle;
+}
+
+.tabel-data tbody tr:hover {
+  background: #fbfcfa;
+}
+
+.tabel-data td:first-child,
+.tabel-data th:first-child {
+  padding-left: 17px;
+}
+
+/* FOTO PRODUK */
+
+.foto-data {
+  width: 46px;
+  height: 46px;
+  border-radius: 9px;
+  object-fit: cover;
+  background: var(--latar);
+  border: 1px solid var(--garis);
+}
+
+.foto-kosong {
+  width: 46px;
+  height: 46px;
+  border-radius: 9px;
+  background: var(--hijau-muda);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--hijau-gelap);
+  font-size: 17px;
+}
+
+/* KELOMPOK TOMBOL */
+
+.kelompok-aksi {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.tombol-edit,
+.tombol-hapus,
+.tombol-detail {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 11px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.tombol-edit {
+  background: var(--hijau-muda);
+  color: var(--hijau-gelap);
+}
+
+.tombol-hapus {
+  background: #fff0ef;
+  color: var(--merah);
+}
+
+.tombol-detail {
+  background: #f0f2ee;
+  color: #515b51;
+}
+
+/* STATUS */
+
+.status-aktif {
+  display: inline-block;
+  padding: 6px 9px;
+  border-radius: 20px;
+  background: var(--hijau-muda);
+  color: var(--hijau-gelap);
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.status-nonaktif {
+  display: inline-block;
+  padding: 6px 9px;
+  border-radius: 20px;
+  background: #f0f0f0;
+  color: #777;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+/* PESAN DATA KOSONG */
+
+.data-kosong {
+  padding: 35px 15px;
+  text-align: center;
+  color: var(--abu);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* RESPONSIF */
+
+@media (max-width: 600px) {
+  .area-konten {
+    padding: 14px;
+  }
+
+  .alat-data {
+    align-items: stretch;
+  }
+
+  .kelompok-pencarian {
+    width: 100%;
+    flex-basis: 100%;
+  }
+
+  .input-pencarian {
+    max-width: none;
+  }
+
+  .filter-data {
+    width: 100%;
+  }
+
+  .header-konten {
+    align-items: flex-start;
+  }
+
+  .tabel-data th,
+  .tabel-data td {
+    padding: 12px 10px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =================================
+     BAGIAN 4 - HALAMAN LOGIN
+================================= -->
+
+<div id="wadahNotifikasi"></div>
+
+<section class="halaman-login" id="halamanLogin">
+
+  <div class="kartu-login">
+
+    <div class="logo-login">N</div>
+
+    <h1 class="judul-login">Selamat Datang</h1>
+
+    <p class="deskripsi-login">
+      Masuk ke panel pengelolaan toko NAFA.FASHION.
+      Gunakan akun administrator yang sudah terdaftar.
+    </p>
+
+    <form id="formLogin">
+
+      <div class="grup-input">
+        <label for="emailAdmin">Alamat Email</label>
+        <input
+          type="email"
+          id="emailAdmin"
+          placeholder="Masukkan email"
+          autocomplete="username"
+          required
+        >
+      </div>
+
+      <div class="grup-input">
+        <label for="passwordAdmin">Kata Sandi</label>
+        <input
+          type="password"
+          id="passwordAdmin"
+          placeholder="Masukkan kata sandi"
+          autocomplete="current-password"
+          required
+        >
+      </div>
+
+      <button
+        type="submit"
+        class="tombol-utama"
+        id="tombolLogin"
+      >
+        Masuk ke Panel Admin
+      </button>
+
+      <p class="pesan-login" id="pesanLogin"></p>
+
+    </form>
+
+    <div class="catatan-login">
+      NAFA.FASHION · Panel Pengelolaan Toko
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =================================
+     BAGIAN 4 - PANEL ADMIN
+================================= -->
+
+<div class="panel-admin" id="panelAdmin">
+
+  <!-- HEADER -->
+
+  <header class="header-admin">
+
+    <div class="brand-admin">
+
+      <div class="logo-admin">N</div>
+
+      <div>
+        <strong>NAFA.FASHION</strong>
+        <span>Panel Pengelolaan Toko</span>
+      </div>
+
+    </div>
+
+    <button
+      type="button"
+      class="tombol-keluar"
+      id="tombolKeluar"
+    >
+      Keluar
+    </button>
+
+  </header>
+
+
+  <!-- LAYOUT UTAMA -->
+
+  <div class="layout-admin">
+
+    <!-- MENU SAMPING -->
+
+    <aside class="sidebar-admin">
+
+      <div class="label-menu">
+        MENU UTAMA
+      </div>
+
+      <nav class="menu-admin" id="menuAdmin">
+
+        <button
+          type="button"
+          class="aktif"
+          data-halaman="dashboard"
+        >
+          <span>▦</span>
+          Dashboard
+        </button>
+
+        <button
+          type="button"
+          data-halaman="produk"
+        >
+          <span>▣</span>
+          Produk
+        </button>
+
+        <button
+          type="button"
+          data-halaman="pesanan"
+        >
+          <span>▤</span>
+          Pesanan
+        </button>
+
+        <button
+          type="button"
+          data-halaman="stok"
+        >
+          <span>▥</span>
+          Monitoring Stok
+        </button>
+
+        <button
+          type="button"
+          data-halaman="pembayaran"
+        >
+          <span>▧</span>
+          Pembayaran
+        </button>
+
+      </nav>
+
+    </aside>
+
+
+    <!-- AREA KONTEN -->
+
+    <main class="konten-admin">
+
+
+      <!-- HALAMAN DASHBOARD -->
+
+      <section
+        class="halaman-konten aktif"
+        id="halaman-dashboard"
+      >
+
+        <div class="judul-halaman">
+
+          <h1>Dashboard</h1>
+
+          <p>
+            Selamat datang di pusat pengelolaan NAFA.FASHION.
+          </p>
+
+        </div>
+
+
+        <div class="grid-statistik">
+
+          <div class="kartu-statistik">
+
+            <div class="statistik-label">
+              Total Produk
+            </div>
+
+            <div
+              class="statistik-angka"
+              id="statTotalProduk"
+            >
+              0
+            </div>
+
+            <div class="statistik-catatan">
+              Produk dalam katalog
+            </div>
+
+          </div>
+
+
+          <div class="kartu-statistik">
+
+            <div class="statistik-label">
+              Total Pesanan
+            </div>
+
+            <div
+              class="statistik-angka"
+              id="statTotalPesanan"
+            >
+              0
+            </div>
+
+            <div class="statistik-catatan">
+              Seluruh pesanan masuk
+            </div>
+
+          </div>
+
+
+          <div class="kartu-statistik">
+
+            <div class="statistik-label">
+              Produk Habis
+            </div>
+
+            <div
+              class="statistik-angka"
+              id="statProdukHabis"
+            >
+              0
+            </div>
+
+            <div class="statistik-catatan">
+              Produk dengan stok kosong
+            </div>
+
+          </div>
+
+
+          <div class="kartu-statistik">
+
+            <div class="statistik-label">
+              Pesanan Menunggu
+            </div>
+
+            <div
+              class="statistik-angka"
+              id="statPesananMenunggu"
+            >
+              0
+            </div>
+
+            <div class="statistik-catatan">
+              Perlu pemeriksaan admin
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="area-konten">
+
+          <div class="judul-area">
+            Ringkasan Toko
+          </div>
+
+          <p class="teks-bantuan">
+            Data ringkasan toko akan ditampilkan setelah
+            sistem terhubung dengan Supabase.
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <!-- HALAMAN PRODUK -->
+
+      <section
+        class="halaman-konten"
+        id="halaman-produk"
+      >
+
+        <div class="judul-halaman">
+
+          <h1>Produk</h1>
+
+          <p>
+            Kelola katalog dan informasi produk toko.
+          </p>
+
+        </div>
+
+        <div id="kontenProduk">
+
+  <div class="header-konten">
+    <div>
+      <h2>Daftar Produk</h2>
+      <p>Kelola seluruh produk NAFA.FASHION.</p>
+    </div>
+
+    <button
+      type="button"
+      class="tombol-utama"
+      id="tombolTambahProduk"
+    >
+      + Tambah Produk
+    </button>
+  </div>
+
+  <!-- FORMULIR PRODUK -->
+
+  <form
+    id="formProduk"
+    class="form-produk"
+  >
+
+    <div class="kepala-form">
+      <h3 id="judulFormProduk">Tambah Produk Baru</h3>
+
+      <button
+        type="button"
+        class="tombol-sekunder"
+        id="tombolTutupForm"
+      >
+        Tutup
+      </button>
+    </div>
+
+    <input type="hidden" id="idProduk">
+
+    <div class="grid-form-produk">
+
+      <div class="grup-input">
+        <label for="namaProduk">Nama Produk</label>
+        <input
+          type="text"
+          id="namaProduk"
+          maxlength="150"
+          placeholder="Nama produk"
+          required
+        >
+      </div>
+
+      <div class="grup-input">
+        <label for="hargaProduk">Harga Produk (Rp)</label>
+        <input
+          type="number"
+          id="hargaProduk"
+          min="0"
+          step="1"
+          placeholder="Contoh: 150000"
+          required
+        >
+      </div>
+
+      <div class="grup-input">
+        <label for="ukuranProduk">Ukuran</label>
+        <input
+          type="text"
+          id="ukuranProduk"
+          placeholder="Contoh: M, L, XL"
+        >
+      </div>
+
+      <div class="grup-input">
+        <label for="kondisiProduk">Kondisi</label>
+        <select id="kondisiProduk">
+          <option value="">Pilih kondisi</option>
+          <option value="Baru">Baru</option>
+          <option value="Sangat Baik">Sangat Baik</option>
+          <option value="Baik">Baik</option>
+          <option value="Cukup Baik">Cukup Baik</option>
+        </select>
+      </div>
+
+      <div class="grup-input">
+        <label for="stokProduk">Jumlah Stok</label>
+        <input
+          type="number"
+          id="stokProduk"
+          min="0"
+          step="1"
+          value="0"
+          required
+        >
+      </div>
+
+      <div class="grup-input">
+        <label for="aktifProduk">Status Produk</label>
+        <select id="aktifProduk">
+          <option value="true">Aktif</option>
+          <option value="false">Nonaktif</option>
+        </select>
+      </div>
+
+      <div class="grup-input form-lebar">
+        <label for="fotoProduk">Foto Produk</label>
+        <input
+          type="file"
+          id="fotoProduk"
+          accept="image/jpeg,image/png,image/webp"
+        >
+
+        <div class="teks-bantuan">
+          Format JPG, PNG, atau WEBP. Maksimal 5 MB.
+        </div>
+
+        <div
+          class="pratinjau-foto"
+          id="pratinjauFoto"
+        >
+          Pratinjau foto
+        </div>
+      </div>
+
+      <div class="grup-input form-lebar">
+        <label for="deskripsiProduk">Deskripsi Produk</label>
+        <textarea
+          id="deskripsiProduk"
+          maxlength="3000"
+          placeholder="Tuliskan informasi produk..."
+        ></textarea>
+      </div>
+
+    </div>
+
+    <div class="aksi-form">
+
+      <button
+        type="button"
+        class="tombol-sekunder"
+        id="tombolBatalProduk"
+      >
+        Batal
+      </button>
+
+      <button
+        type="submit"
+        class="tombol-utama"
+        id="tombolSimpanProduk"
+      >
+        Simpan Produk
+      </button>
+
+    </div>
+
+  </form>
+
+  <!-- PENCARIAN PRODUK -->
+
+  <div class="area-konten">
+
+    <div class="alat-data">
+
+      <input
+        type="search"
+        class="input-pencarian"
+        id="cariProduk"
+        placeholder="Cari nama produk..."
+      >
+
+      <select
+        class="filter-data"
+        id="filterProduk"
+      >
+        <option value="">Semua Produk</option>
+        <option value="true">Produk Aktif</option>
+        <option value="false">Produk Nonaktif</option>
+      </select>
+
+    </div>
+
+    <!-- TABEL PRODUK -->
+
+    <div class="wadah-tabel">
+
+      <table class="tabel-data">
+
+        <thead>
+          <tr>
+            <th>Foto</th>
+            <th>Nama Produk</th>
+            <th>Harga</th>
+            <th>Stok</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+
+        <tbody id="daftarProduk">
+          <tr>
+            <td colspan="6">
+              <div class="data-kosong">
+                Data produk akan ditampilkan di sini.
+              </div>
+            </td>
+          </tr>
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+      </section>
+
+
+      <!-- HALAMAN PESANAN -->
+
+      <section
+        class="halaman-konten"
+        id="halaman-pesanan"
+      >
+
+        <div class="judul-halaman">
+
+          <h1>Pesanan</h1>
+
+          <p>
+            Pantau dan kelola pesanan pelanggan.
+          </p>
+
+        </div>
+
+        <div id="kontenPesanan">
+
+  <div class="header-konten">
+    <div>
+      <h2>Daftar Pesanan</h2>
+      <p>Kelola pesanan yang masuk dari pelanggan.</p>
+    </div>
+
+    <button
+      type="button"
+      class="tombol-sekunder"
+      id="tombolMuatPesanan"
+    >
+      Muat Ulang
+    </button>
+  </div>
+
+  <div class="area-konten">
+
+    <div class="alat-data">
+
+      <input
+        type="search"
+        class="input-pencarian"
+        id="cariPesanan"
+        placeholder="Cari kode atau nama pelanggan..."
+      >
+
+      <select
+        class="filter-data"
+        id="filterStatusPesanan"
+      >
+        <option value="">Semua Status</option>
+        <option value="pending">Menunggu</option>
+        <option value="paid">Dibayar</option>
+        <option value="processing">Diproses</option>
+        <option value="shipped">Dikirim</option>
+        <option value="completed">Selesai</option>
+        <option value="cancelled">Dibatalkan</option>
+      </select>
+
+    </div>
+
+    <div class="wadah-tabel">
+      <table class="tabel-data">
+
+        <thead>
+          <tr>
+            <th>Kode Pesanan</th>
+            <th>Pelanggan</th>
+            <th>Total</th>
+            <th>Tanggal</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+
+        <tbody id="daftarPesanan">
+          <tr>
+            <td colspan="6">
+              <div class="data-kosong">
+                Data pesanan akan ditampilkan di sini.
+              </div>
+            </td>
+          </tr>
+        </tbody>
+
+      </table>
+    </div>
+
+  </div>
+
+</div>
+
+      </section>
+
+
+      <!-- HALAMAN STOK -->
+
+      <section
+        class="halaman-konten"
+        id="halaman-stok"
+      >
+
+        <div class="judul-halaman">
+
+          <h1>Monitoring Stok</h1>
+
+          <p>
+            Pantau ketersediaan stok seluruh produk.
+          </p>
+
+        </div>
+
+        <div id="kontenStok">
+
+  <div class="header-konten">
+    <div>
+      <h2>Persediaan Produk</h2>
+      <p>Pantau ketersediaan produk di toko.</p>
+    </div>
+
+    <button
+      type="button"
+      class="tombol-sekunder"
+      id="tombolMuatStok"
+    >
+      Muat Ulang
+    </button>
+  </div>
+
+  <div class="grid-statistik">
+
+    <div class="kartu-statistik">
+      <div class="statistik-label">Total Jenis Produk</div>
+      <div class="statistik-angka" id="totalJenisStok">0</div>
+    </div>
+
+    <div class="kartu-statistik">
+      <div class="statistik-label">Stok Tersedia</div>
+      <div class="statistik-angka" id="totalStok">0</div>
+    </div>
+
+    <div class="kartu-statistik">
+      <div class="statistik-label">Stok Menipis</div>
+      <div class="statistik-angka" id="stokMenipis">0</div>
+    </div>
+
+    <div class="kartu-statistik">
+      <div class="statistik-label">Stok Habis</div>
+      <div class="statistik-angka" id="stokHabis">0</div>
+    </div>
+
+  </div>
+
+  <div class="area-konten">
+
+    <div class="alat-data">
+
+      <input
+        type="search"
+        class="input-pencarian"
+        id="cariStok"
+        placeholder="Cari produk..."
+      >
+
+      <select
+        class="filter-data"
+        id="filterStok"
+      >
+        <option value="">Semua Stok</option>
+        <option value="habis">Stok Habis</option>
+        <option value="menipis">Stok Menipis</option>
+        <option value="tersedia">Stok Tersedia</option>
+      </select>
+
+    </div>
+
+    <div class="wadah-tabel">
+
+      <table class="tabel-data">
+
+        <thead>
+          <tr>
+            <th>Produk</th>
+            <th>Ukuran</th>
+            <th>Jumlah Stok</th>
+            <th>Kondisi Stok</th>
+          </tr>
+        </thead>
+
+        <tbody id="daftarStok">
+          <tr>
+            <td colspan="4">
+              <div class="data-kosong">
+                Data persediaan akan ditampilkan di sini.
+              </div>
+            </td>
+          </tr>
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+      </section>
+
+
+      <!-- HALAMAN PEMBAYARAN -->
+
+      <section
+        class="halaman-konten"
+        id="halaman-pembayaran"
+      >
+
+        <div class="judul-halaman">
+
+          <h1>Pembayaran</h1>
+
+          <p>
+            Periksa transaksi dan status pembayaran pelanggan.
+          </p>
+
+        </div>
+
+<div id="kontenPembayaran">
+
+  <div class="header-konten">
+    <div>
+      <h2>Transaksi Pembayaran</h2>
+      <p>Pantau status pembayaran setiap pesanan.</p>
+    </div>
+
+    <button
+      type="button"
+      class="tombol-sekunder"
+      id="tombolMuatPembayaran"
+    >
+      Muat Ulang
+    </button>
+  </div>
+
+  <div class="area-konten">
+
+    <div class="alat-data">
+
+      <input
+        type="search"
+        class="input-pencarian"
+        id="cariPembayaran"
+        placeholder="Cari kode transaksi..."
+      >
+
+      <select
+        class="filter-data"
+        id="filterPembayaran"
+      >
+        <option value="">Semua Status</option>
+        <option value="pending">Menunggu</option>
+        <option value="paid">Dibayar</option>
+        <option value="failed">Gagal</option>
+        <option value="refunded">Dikembalikan</option>
+      </select>
+
+    </div>
+
+    <div class="wadah-tabel">
+
+      <table class="tabel-data">
+
+        <thead>
+          <tr>
+            <th>Kode Referensi</th>
+            <th>Kode Pesanan</th>
+            <th>Metode</th>
+            <th>Jumlah</th>
+            <th>Tanggal</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+
+        <tbody id="daftarPembayaran">
+          <tr>
+            <td colspan="7">
+              <div class="data-kosong">
+                Data pembayaran akan ditampilkan di sini.
+              </div>
+            </td>
+          </tr>
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+      </section>
+
+
+    </main>
+
+  </div>
+
+</div>
+
+  <!-- MODAL KONFIRMASI -->
+
+<div
+  class="lapisan-modal"
+  id="modalKonfirmasi"
+  aria-hidden="true"
+>
+  <div
+    class="kotak-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="judulKonfirmasi"
+  >
+
+    <div class="ikon-modal">!</div>
+
+    <h3 id="judulKonfirmasi">
+      Konfirmasi Tindakan
+    </h3>
+
+    <p id="pesanKonfirmasi">
+      Apakah kamu yakin ingin melanjutkan?
+    </p>
+
+    <div class="aksi-modal">
+
+      <button
+        type="button"
+        class="tombol-sekunder"
+        id="batalKonfirmasi"
+      >
+        Batal
+      </button>
+
+      <button
+        type="button"
+        class="tombol-bahaya"
+        id="setujuKonfirmasi"
+      >
+        Ya, Lanjutkan
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- =================================
+     TEMPAT JAVASCRIPT BAGIAN SELANJUTNYA
+================================= -->
+
+<script>
+
+"use strict";
+
+/* =====================================
+   1. KONFIGURASI SUPABASE
+===================================== */
+
+const SUPABASE_URL = "https://nlbfyfaoxdgkozvwgagp.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sYmZ5ZmFveGRna296dndnYWdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0MDQ5MjcsImV4cCI6MjEwODk4MDkyN30.jao47Rv90PXt0We0-ZfMnZXWkm7FqGkTs46LlFvPH08";
+
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
+
+
+/* =====================================
+   2. PEMANGGIL ELEMEN HTML
+===================================== */
+
+const el = (id) => document.getElementById(id);
+
+
+/* =====================================
+   3. PENYIMPANAN DATA SEMENTARA
+===================================== */
+
+let dataProduk = [];
+let dataPesanan = [];
+let dataPembayaran = [];
+
+let produkAkanDihapus = null;
+let pesananTerpilih = null;
+
+
+/* =====================================
+   4. SISTEM NOTIFIKASI
+===================================== */
+
+function tampilkanNotifikasi(pesan, gagal = false) {
+  const wadah = el("wadahNotifikasi");
+
+  if (!wadah) return;
+
+  const notifikasi = document.createElement("div");
+
+  notifikasi.className = gagal
+    ? "notifikasi gagal"
+    : "notifikasi";
+
+  notifikasi.textContent = pesan;
+
+  wadah.appendChild(notifikasi);
+
+  setTimeout(() => {
+    notifikasi.remove();
+  }, 3500);
+}
+
+
+/* =====================================
+   5. FORMAT RUPIAH
+===================================== */
+
+function formatRupiah(nilai) {
+  const angka = Number(nilai) || 0;
+
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0
+  }).format(angka);
+}
+
+
+/* =====================================
+   6. PENGAMAN TEKS HTML
+===================================== */
+
+function escapeHTML(nilai) {
+  return String(nilai ?? "").replace(
+    /[&<>"']/g,
+    karakter => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    })[karakter]
+  );
+}
+
+
+/* =====================================
+   7. FORMAT TANGGAL
+===================================== */
+
+function formatTanggal(nilai) {
+  if (!nilai) return "-";
+
+  const tanggal = new Date(nilai);
+
+  if (Number.isNaN(tanggal.getTime())) {
+    return "-";
+  }
+
+  return new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(tanggal);
+}
+
+
+/* =====================================
+   8. PEMETAAN STATUS
+===================================== */
+
+function namaStatus(status) {
+  const daftarStatus = {
+    pending: "Menunggu",
+    paid: "Dibayar",
+    processing: "Diproses",
+    shipped: "Dikirim",
+    completed: "Selesai",
+    cancelled: "Dibatalkan",
+    failed: "Gagal",
+    refunded: "Dikembalikan"
+  };
+
+  return daftarStatus[status] || status || "-";
+}
+
+  /* =====================================
+   9. SISTEM LOGIN ADMIN
+===================================== */
+
+async function tampilkanPanelAdmin() {
+  el("halamanLogin").classList.add("hidden");
+  el("panelAdmin").classList.add("aktif");
+
+  await muatDashboardAwal();
+}
+
+
+function tampilkanHalamanLogin() {
+  el("panelAdmin").classList.remove("aktif");
+  el("halamanLogin").classList.remove("hidden");
+}
+
+
+function tampilkanPesanLogin(pesan, gagal = true) {
+  const area = el("pesanLogin");
+
+  if (!area) return;
+
+  area.textContent = pesan;
+  area.style.color = gagal ? "#d94c4c" : "#356b3c";
+}
+
+
+async function verifikasiAdmin() {
+  const { data, error } = await db.rpc("is_admin");
+
+  if (error) {
+    throw new Error("Gagal memeriksa hak akses admin.");
+  }
+
+  if (data !== true) {
+    throw new Error("Akun ini tidak memiliki akses admin.");
+  }
+
+  return true;
+}
+
+
+/* =====================================
+   10. PROSES LOGIN
+===================================== */
+
+el("formLogin").addEventListener("submit", async function(event) {
+  event.preventDefault();
+
+  const email = el("emailAdmin").value.trim();
+  const password = el("passwordAdmin").value;
+  const tombol = el("tombolLogin");
+
+  if (!email || !password) {
+    tampilkanPesanLogin("Email dan password wajib diisi.");
+    return;
+  }
+
+  if (SUPABASE_ANON_KEY === "TEMPEL_ANON_KEY_DI_SINI") {
+    tampilkanPesanLogin("Anon key Supabase belum dipasang.");
+    return;
+  }
+
+  tombol.disabled = true;
+  tombol.textContent = "Memeriksa akun...";
+  tampilkanPesanLogin("", false);
+
+  try {
+    const { data, error } = await db.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
+
+    if (error) throw error;
+
+    await verifikasiAdmin();
+
+    tampilkanNotifikasi("Login admin berhasil.");
+
+    await tampilkanPanelAdmin();
+
+  } catch (error) {
+    await db.auth.signOut();
+
+    tampilkanHalamanLogin();
+
+    tampilkanPesanLogin(
+      error.message || "Login gagal. Periksa kembali akun Anda."
+    );
+
+  } finally {
+    tombol.disabled = false;
+    tombol.textContent = "Masuk ke Panel Admin";
+  }
+});
+
+
+/* =====================================
+   11. PROSES LOGOUT
+===================================== */
+
+el("tombolKeluar").addEventListener("click", async function() {
+  const { error } = await db.auth.signOut();
+
+  if (error) {
+    tampilkanNotifikasi("Gagal keluar dari akun.", true);
+    return;
+  }
+
+  dataProduk = [];
+  dataPesanan = [];
+  dataPembayaran = [];
+
+  tampilkanHalamanLogin();
+
+  el("passwordAdmin").value = "";
+
+  tampilkanPesanLogin("Anda berhasil keluar.", false);
+});
+
+
+/* =====================================
+   12. PERIKSA SESI SAAT HALAMAN DIBUKA
+===================================== */
+
+async function periksaSesiAdmin() {
+  if (SUPABASE_ANON_KEY === "TEMPEL_ANON_KEY_DI_SINI") {
+    tampilkanHalamanLogin();
+    tampilkanPesanLogin("Pasang anon key Supabase terlebih dahulu.");
+    return;
+  }
+
+  try {
+    const { data, error } = await db.auth.getSession();
+
+    if (error) throw error;
+
+    const session = data.session;
+
+    if (!session) {
+      tampilkanHalamanLogin();
+      return;
+    }
+
+    await verifikasiAdmin();
+
+    await tampilkanPanelAdmin();
+
+  } catch (error) {
+    await db.auth.signOut();
+
+    tampilkanHalamanLogin();
+
+    tampilkanPesanLogin(
+      error.message || "Sesi tidak valid. Silakan login kembali."
+    );
+  }
+}
+
+
+/* =====================================
+   13. MULAI APLIKASI
+===================================== */
+
+periksaSesiAdmin();
+
+  /* =====================================
+   14. NAVIGASI HALAMAN ADMIN
+===================================== */
+
+function pindahHalaman(namaHalaman) {
+  const semuaHalaman = document.querySelectorAll(".halaman-konten");
+  const semuaMenu = document.querySelectorAll(
+    "#menuAdmin [data-halaman]"
+  );
+
+  semuaHalaman.forEach(halaman => {
+    halaman.classList.remove("aktif");
+  });
+
+  semuaMenu.forEach(menu => {
+    menu.classList.remove("aktif");
+  });
+
+  const halamanTujuan = el("halaman-" + namaHalaman);
+  const menuTujuan = document.querySelector(
+    '#menuAdmin [data-halaman="' + namaHalaman + '"]'
+  );
+
+  if (!halamanTujuan || !menuTujuan) return;
+
+  halamanTujuan.classList.add("aktif");
+  menuTujuan.classList.add("aktif");
+}
+
+
+el("menuAdmin").addEventListener("click", function(event) {
+  const tombol = event.target.closest("[data-halaman]");
+
+  if (!tombol) return;
+
+  pindahHalaman(tombol.dataset.halaman);
+});
+
+
+/* =====================================
+   15. MEMUAT DATA DASHBOARD
+===================================== */
+
+async function muatDashboardAwal() {
+  try {
+    const hasilProduk = await db
+      .from("products")
+      .select("id", { count: "exact", head: true });
+
+    const hasilPesanan = await db
+      .from("orders")
+      .select("id", { count: "exact", head: true });
+
+    const hasilStokHabis = await db
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .eq("stock", 0);
+
+    const hasilMenunggu = await db
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending");
+
+    if (hasilProduk.error) throw hasilProduk.error;
+    if (hasilPesanan.error) throw hasilPesanan.error;
+    if (hasilStokHabis.error) throw hasilStokHabis.error;
+    if (hasilMenunggu.error) throw hasilMenunggu.error;
+
+    el("statTotalProduk").textContent =
+      hasilProduk.count ?? 0;
+
+    el("statTotalPesanan").textContent =
+      hasilPesanan.count ?? 0;
+
+    el("statProdukHabis").textContent =
+      hasilStokHabis.count ?? 0;
+
+    el("statPesananMenunggu").textContent =
+      hasilMenunggu.count ?? 0;
+
+  } catch (error) {
+    console.error("Dashboard:", error);
+
+    tampilkanNotifikasi(
+      "Gagal memuat ringkasan dashboard.",
+      true
+    );
+  }
+}
+
+
+/* =====================================
+   16. TOMBOL MUAT ULANG DASHBOARD
+===================================== */
+
+const tombolMuatDashboard = el("tombolMuatDashboard");
+
+if (tombolMuatDashboard) {
+  tombolMuatDashboard.addEventListener("click", async function() {
+    tombolMuatDashboard.disabled = true;
+
+    await muatDashboardAwal();
+
+    tombolMuatDashboard.disabled = false;
+
+    tampilkanNotifikasi("Dashboard diperbarui.");
+  });
+}
+
+  /* =====================================
+   17. MENGAMBIL DATA PRODUK
+===================================== */
+
+async function muatProduk() {
+  const tabel = el("daftarProduk");
+
+  tabel.innerHTML = `
+    <tr>
+      <td colspan="7" class="data-kosong">
+        Memuat data produk...
+      </td>
+    </tr>
+  `;
+
+  try {
+    const { data, error } = await db
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    dataProduk = data || [];
+
+    tampilkanProduk();
+
+  } catch (error) {
+    console.error("Produk:", error);
+
+    tabel.innerHTML = `
+      <tr>
+        <td colspan="7" class="data-kosong">
+          Gagal memuat produk.
+        </td>
+      </tr>
+    `;
+
+    tampilkanNotifikasi(
+      "Gagal mengambil data produk.",
+      true
+    );
+  }
+}
+
+
+/* =====================================
+   18. ALAMAT FOTO PRODUK
+===================================== */
+
+function alamatFotoProduk(foto) {
+  if (!foto) return "";
+
+  if (/^https?:\/\//i.test(foto)) {
+    return foto;
+  }
+
+  const { data } = db.storage
+    .from("product-images")
+    .getPublicUrl(foto);
+
+  return data.publicUrl;
+}
+
+
+/* =====================================
+   19. MENAMPILKAN PRODUK
+===================================== */
+
+function tampilkanProduk() {
+  const tabel = el("daftarProduk");
+
+  const pencarian = el("cariProduk").value
+    .trim()
+    .toLowerCase();
+
+  const filter = el("filterProduk").value;
+
+  const hasil = dataProduk.filter(produk => {
+    const cocokNama =
+      String(produk.name || "")
+        .toLowerCase()
+        .includes(pencarian);
+
+    let cocokStatus = true;
+
+    if (filter === "aktif") {
+      cocokStatus = produk.is_active === true;
+    } else if (filter === "nonaktif") {
+      cocokStatus = produk.is_active === false;
+    }
+
+    return cocokNama && cocokStatus;
+  });
+
+  if (hasil.length === 0) {
+    tabel.innerHTML = `
+      <tr>
+        <td colspan="7" class="data-kosong">
+          Produk tidak ditemukan.
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  tabel.innerHTML = hasil.map(produk => {
+    const foto = alamatFotoProduk(produk.photo);
+
+    const tampilanFoto = foto
+      ? `<img
+          src="${escapeHTML(foto)}"
+          class="foto-data"
+          alt="Foto produk"
+          loading="lazy"
+        >`
+      : `<div class="foto-kosong">Foto kosong</div>`;
+
+    const status = produk.is_active
+      ? `<span class="status-aktif">Aktif</span>`
+      : `<span class="status-nonaktif">Nonaktif</span>`;
+
+    return `
+      <tr>
+        <td>${tampilanFoto}</td>
+
+        <td>
+          <strong>${escapeHTML(produk.name)}</strong>
+        </td>
+
+        <td>${formatRupiah(produk.price)}</td>
+
+        <td>${escapeHTML(produk.size || "-")}</td>
+
+        <td>${Number(produk.stock) || 0}</td>
+
+        <td>${status}</td>
+
+        <td>
+          <div class="kelompok-aksi">
+            <button
+              class="tombol-detail"
+              data-aksi-produk="detail"
+              data-id="${escapeHTML(produk.id)}"
+            >Detail</button>
+
+            <button
+              class="tombol-edit"
+              data-aksi-produk="edit"
+              data-id="${escapeHTML(produk.id)}"
+            >Edit</button>
+
+            <button
+              class="tombol-hapus"
+              data-aksi-produk="hapus"
+              data-id="${escapeHTML(produk.id)}"
+            >Hapus</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+
+/* =====================================
+   20. PENCARIAN DAN FILTER PRODUK
+===================================== */
+
+el("cariProduk").addEventListener("input", tampilkanProduk);
+
+el("filterProduk").addEventListener("change", tampilkanProduk);
+
+
+/* =====================================
+   21. MUAT ULANG PRODUK
+===================================== */
+
+el("tombolTambahProduk").addEventListener("click", function() {
+  el("formProduk").classList.add("terbuka");
+
+  el("judulFormProduk").textContent = "Tambah Produk";
+
+  el("idProduk").value = "";
+
+  el("formProduk").scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+});
+
+  /* =====================================
+   22. RESET FORM PRODUK
+===================================== */
+
+function resetFormProduk() {
+  el("formProduk").reset();
+
+  el("idProduk").value = "";
+  el("pratinjauFoto").innerHTML = "";
+
+  el("judulFormProduk").textContent = "Tambah Produk";
+  el("formProduk").classList.remove("terbuka");
+}
+
+
+/* =====================================
+   23. MENYIAPKAN FORM EDIT
+===================================== */
+
+function editProduk(id) {
+  const produk = dataProduk.find(item =>
+    String(item.id) === String(id)
+  );
+
+  if (!produk) {
+    tampilkanNotifikasi("Produk tidak ditemukan.", true);
+    return;
+  }
+
+  el("idProduk").value = produk.id;
+  el("namaProduk").value = produk.name || "";
+  el("hargaProduk").value = produk.price ?? "";
+  el("ukuranProduk").value = produk.size || "";
+  el("kondisiProduk").value = produk.condition || "";
+  el("stokProduk").value = produk.stock ?? 0;
+  el("aktifProduk").value = String(produk.is_active);
+  el("deskripsiProduk").value = produk.description || "";
+
+  el("judulFormProduk").textContent = "Edit Produk";
+
+  if (produk.photo) {
+    const foto = alamatFotoProduk(produk.photo);
+
+    el("pratinjauFoto").innerHTML = `
+      <img
+        src="${escapeHTML(foto)}"
+        alt="Foto produk"
+        style="max-width:100%;max-height:180px;object-fit:contain"
+      >
+    `;
+  } else {
+    el("pratinjauFoto").innerHTML = "";
+  }
+
+  el("formProduk").classList.add("terbuka");
+
+  el("formProduk").scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+
+/* =====================================
+   24. PRATINJAU FOTO BARU
+===================================== */
+
+el("fotoProduk").addEventListener("change", function() {
+  const file = this.files[0];
+  const area = el("pratinjauFoto");
+
+  area.innerHTML = "";
+
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    tampilkanNotifikasi("File harus berupa gambar.", true);
+    this.value = "";
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    tampilkanNotifikasi("Ukuran foto maksimal 5 MB.", true);
+    this.value = "";
+    return;
+  }
+
+  const gambar = document.createElement("img");
+
+  gambar.src = URL.createObjectURL(file);
+  gambar.alt = "Pratinjau foto produk";
+  gambar.style.maxWidth = "100%";
+  gambar.style.maxHeight = "180px";
+  gambar.style.objectFit = "contain";
+
+  area.appendChild(gambar);
+});
+
+
+/* =====================================
+   25. UNGGAH FOTO KE SUPABASE
+===================================== */
+
+async function unggahFotoProduk(file) {
+  const ekstensi = file.name.split(".").pop().toLowerCase();
+
+  const namaFile =
+    "produk-" + Date.now() + "-" +
+    Math.random().toString(36).slice(2) +
+    "." + ekstensi;
+
+  const { data, error } = await db.storage
+    .from("product-images")
+    .upload(namaFile, file, {
+      cacheControl: "3600",
+      upsert: false
+    });
+
+  if (error) throw error;
+
+  return data.path;
+}
+
+
+/* =====================================
+   26. SIMPAN PRODUK
+===================================== */
+
+el("formProduk").addEventListener("submit", async function(event) {
+  event.preventDefault();
+
+  const tombol = el("tombolSimpanProduk");
+
+  if (tombol.disabled) return;
+
+  const id = el("idProduk").value;
+  const file = el("fotoProduk").files[0];
+
+  const produkLama = id
+    ? dataProduk.find(item => String(item.id) === String(id))
+    : null;
+
+  tombol.disabled = true;
+  tombol.textContent = "Menyimpan...";
+
+  let fotoBaru = null;
+
+  try {
+    if (file) {
+      fotoBaru = await unggahFotoProduk(file);
+    }
+
+    const nilaiProduk = {
+      name: el("namaProduk").value.trim(),
+      price: Number(el("hargaProduk").value),
+      size: el("ukuranProduk").value.trim(),
+      condition: el("kondisiProduk").value,
+      stock: Number(el("stokProduk").value),
+      description: el("deskripsiProduk").value.trim(),
+      is_active: el("aktifProduk").value === "true",
+      photo: fotoBaru || produkLama?.photo || null
+    };
+
+    if (
+      !nilaiProduk.name ||
+      !Number.isFinite(nilaiProduk.price) ||
+      nilaiProduk.price < 0 ||
+      !Number.isInteger(nilaiProduk.stock) ||
+      nilaiProduk.stock < 0
+    ) {
+      throw new Error("Periksa nama, harga, dan jumlah stok produk.");
+    }
+
+    let hasil;
+
+    if (id) {
+      hasil = await db
+        .from("products")
+        .update({
+          ...nilaiProduk,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", id);
+    } else {
+      hasil = await db
+        .from("products")
+        .insert([nilaiProduk]);
+    }
+
+    if (hasil.error) throw hasil.error;
+
+    tampilkanNotifikasi(
+      id ? "Produk berhasil diperbarui." : "Produk berhasil ditambahkan."
+    );
+
+    resetFormProduk();
+
+    await muatProduk();
+    await muatDashboardAwal();
+
+  } catch (error) {
+    console.error("Simpan produk:", error);
+
+    tampilkanNotifikasi(
+      error.message || "Produk gagal disimpan.",
+      true
+    );
+
+  } finally {
+    tombol.disabled = false;
+    tombol.textContent = "Simpan Produk";
+  }
+});
+
+
+/* =====================================
+   27. TOMBOL BATAL DAN TUTUP FORM
+===================================== */
+
+el("tombolBatalProduk").addEventListener(
+  "click",
+  resetFormProduk
+);
+
+el("tombolTutupForm").addEventListener(
+  "click",
+  resetFormProduk
+);
+
+  /* =====================================
+   28. MEMBUKA MODAL KONFIRMASI
+===================================== */
+
+function bukaModalKonfirmasi(judul, pesan, teksTombol = "Ya, Hapus") {
+  el("judulKonfirmasi").textContent = judul;
+  el("pesanKonfirmasi").textContent = pesan;
+  el("setujuKonfirmasi").textContent = teksTombol;
+
+  el("setujuKonfirmasi").classList.remove("hidden");
+
+  el("modalKonfirmasi").classList.add("aktif");
+}
+
+
+function tutupModalKonfirmasi() {
+  el("modalKonfirmasi").classList.remove("aktif");
+}
+
+
+/* =====================================
+   29. DETAIL PRODUK
+===================================== */
+
+function tampilkanDetailProduk(id) {
+  const produk = dataProduk.find(item =>
+    String(item.id) === String(id)
+  );
+
+  if (!produk) {
+    tampilkanNotifikasi("Produk tidak ditemukan.", true);
+    return;
+  }
+
+  const detail = [
+    "Nama: " + (produk.name || "-"),
+    "Harga: " + formatRupiah(produk.price),
+    "Ukuran: " + (produk.size || "-"),
+    "Kondisi: " + (produk.condition || "-"),
+    "Stok: " + (produk.stock ?? 0),
+    "Status: " + (produk.is_active ? "Aktif" : "Nonaktif"),
+    "Deskripsi: " + (produk.description || "-")
+  ].join("\n");
+
+  bukaModalKonfirmasi(
+    "Detail Produk",
+    detail,
+    "Tutup"
+  );
+
+  el("setujuKonfirmasi").classList.add("hidden");
+}
+
+
+/* =====================================
+   30. AKSI PADA TABEL PRODUK
+===================================== */
+
+el("daftarProduk").addEventListener("click", function(event) {
+  const tombol = event.target.closest("[data-aksi-produk]");
+
+  if (!tombol) return;
+
+  const aksi = tombol.dataset.aksiProduk;
+  const id = tombol.dataset.id;
+
+  if (aksi === "detail") {
+    tampilkanDetailProduk(id);
+    return;
+  }
+
+  if (aksi === "edit") {
+    editProduk(id);
+    return;
+  }
+
+  if (aksi === "hapus") {
+    produkAkanDihapus = id;
+
+    const produk = dataProduk.find(item =>
+      String(item.id) === String(id)
+    );
+
+    if (!produk) {
+      tampilkanNotifikasi("Produk tidak ditemukan.", true);
+      return;
+    }
+
+    bukaModalKonfirmasi(
+      "Hapus Produk?",
+      'Produk "' + produk.name +
+      '" akan dihapus dari database. Tindakan ini tidak dapat dibatalkan.'
+    );
+  }
+});
+
+
+/* =====================================
+   31. MEMPROSES PENGHAPUSAN PRODUK
+===================================== */
+
+el("setujuKonfirmasi").addEventListener("click", async function() {
+  if (!produkAkanDihapus) return;
+
+  const tombol = el("setujuKonfirmasi");
+
+  tombol.disabled = true;
+  tombol.textContent = "Menghapus...";
+
+  try {
+    const { error } = await db
+      .from("products")
+      .delete()
+      .eq("id", produkAkanDihapus);
+
+    if (error) throw error;
+
+    produkAkanDihapus = null;
+
+    tutupModalKonfirmasi();
+
+    tampilkanNotifikasi("Produk berhasil dihapus.");
+
+    await muatProduk();
+    await muatDashboardAwal();
+
+  } catch (error) {
+    console.error("Hapus produk:", error);
+
+    tampilkanNotifikasi(
+      error.message || "Produk gagal dihapus.",
+      true
+    );
+
+  } finally {
+    tombol.disabled = false;
+    tombol.textContent = "Ya, Hapus";
+  }
+});
+
+
+/* =====================================
+   32. MEMBATALKAN MODAL
+===================================== */
+
+el("batalKonfirmasi").addEventListener("click", function() {
+  produkAkanDihapus = null;
+  tutupModalKonfirmasi();
+});
+
+
+/* =====================================
+   33. MENUTUP MODAL DENGAN KLIK LATAR
+===================================== */
+
+el("modalKonfirmasi").addEventListener("click", function(event) {
+  if (event.target === this) {
+    produkAkanDihapus = null;
+    tutupModalKonfirmasi();
+  }
+});
+
+  /* =====================================
+   34. MENGAMBIL DATA PESANAN
+===================================== */
+
+async function muatPesanan() {
+  const tabel = el("daftarPesanan");
+
+  tabel.innerHTML = `
+    <tr>
+      <td colspan="6" class="data-kosong">
+        Memuat data pesanan...
+      </td>
+    </tr>
+  `;
+
+  try {
+    const { data, error } = await db
+      .from("orders")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    dataPesanan = data || [];
+
+    tampilkanPesanan();
+
+  } catch (error) {
+    console.error("Pesanan:", error);
+
+    tabel.innerHTML = `
+      <tr>
+        <td colspan="6" class="data-kosong">
+          Gagal memuat pesanan.
+        </td>
+      </tr>
+    `;
+
+    tampilkanNotifikasi(
+      "Gagal mengambil data pesanan.",
+      true
+    );
+  }
+}
+
+
+/* =====================================
+   35. MENAMPILKAN DAFTAR PESANAN
+===================================== */
+
+/* =====================================
+   35. MENAMPILKAN DAFTAR PESANAN
+===================================== */
+
+function tampilkanPesanan() {
+  const tabel = el("daftarPesanan");
+
+  const pencarian = el("cariPesanan")
+    .value.trim().toLowerCase();
+
+  const filter = el("filterStatusPesanan").value;
+
+  const daftarStatus = [
+    "pending",
+    "paid",
+    "processing",
+    "shipped",
+    "completed",
+    "cancelled"
+  ];
+
+  const hasil = dataPesanan.filter(pesanan => {
+    const teks = [
+      pesanan.order_code,
+      pesanan.customer_name,
+      pesanan.customer_phone
+    ].join(" ").toLowerCase();
+
+    return teks.includes(pencarian) &&
+      (!filter || pesanan.status === filter);
+  });
+
+  if (hasil.length === 0) {
+    tabel.innerHTML = `
+      <tr>
+        <td colspan="6" class="data-kosong">
+          Pesanan tidak ditemukan.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tabel.innerHTML = hasil.map(pesanan => `
+    <tr>
+      <td>
+        <strong>${escapeHTML(pesanan.order_code)}</strong>
+      </td>
+
+      <td>
+        ${escapeHTML(pesanan.customer_name)}
+        <br>
+        <small>${escapeHTML(pesanan.customer_phone)}</small>
+      </td>
+
+      <td>${formatRupiah(pesanan.total_price)}</td>
+
+      <td>${formatTanggal(pesanan.created_at)}</td>
+
+      <td>
+        <span class="label-status">
+          ${escapeHTML(namaStatus(pesanan.status))}
+        </span>
+      </td>
+
+      <td>
+        <div class="kelompok-aksi">
+          <button
+            class="tombol-detail"
+            data-aksi-pesanan="detail"
+            data-id="${escapeHTML(pesanan.id)}"
+          >Detail</button>
+
+          <select
+            class="filter-data"
+            data-status-pesanan="${escapeHTML(pesanan.id)}"
+          >
+            ${daftarStatus.map(status => `
+              <option
+                value="${status}"
+                ${pesanan.status === status ? "selected" : ""}
+              >${namaStatus(status)}</option>
+            `).join("")}
+          </select>
+
+          <button
+            class="tombol-edit"
+            data-simpan-status="${escapeHTML(pesanan.id)}"
+          >Perbarui</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+}
+
+
+/* =====================================
+   36. PENCARIAN DAN FILTER PESANAN
+===================================== */
+
+el("cariPesanan").addEventListener(
+  "input",
+  tampilkanPesanan
+);
+
+el("filterStatusPesanan").addEventListener(
+  "change",
+  tampilkanPesanan
+);
+
+
+/* =====================================
+   37. MUAT ULANG PESANAN
+===================================== */
+
+el("tombolMuatPesanan").addEventListener(
+  "click",
+  async function() {
+    this.disabled = true;
+
+    await muatPesanan();
+
+    this.disabled = false;
+  }
+);
+
+  /* =====================================
+   38. MEMBUAT MODAL DETAIL PESANAN
+===================================== */
+
+function buatElemenDetail(label, nilai) {
+  const baris = document.createElement("div");
+  baris.style.marginBottom = "12px";
+
+  const judul = document.createElement("strong");
+  judul.textContent = label;
+  judul.style.display = "block";
+  judul.style.marginBottom = "4px";
+
+  const isi = document.createElement("div");
+  isi.textContent = nilai || "-";
+  isi.style.whiteSpace = "pre-wrap";
+  isi.style.overflowWrap = "anywhere";
+
+  baris.append(judul, isi);
+
+  return baris;
+}
+
+
+/* =====================================
+   39. MENAMPILKAN DETAIL PESANAN
+===================================== */
+
+async function tampilkanDetailPesanan(id) {
+  const pesanan = dataPesanan.find(item =>
+    String(item.id) === String(id)
+  );
+
+  if (!pesanan) {
+    tampilkanNotifikasi("Pesanan tidak ditemukan.", true);
+    return;
+  }
+
+  if (pesananTerpilih) return;
+
+  pesananTerpilih = id;
+
+  const modal = document.createElement("div");
+  modal.className = "lapisan-modal aktif";
+
+  const kotak = document.createElement("div");
+  kotak.className = "kotak-modal";
+
+  const judul = document.createElement("h3");
+  judul.textContent = "Detail Pesanan";
+
+  const isi = document.createElement("div");
+  isi.style.marginTop = "18px";
+
+  isi.textContent = "Memuat rincian barang...";
+
+  const tombolTutup = document.createElement("button");
+  tombolTutup.className = "tombol-sekunder";
+  tombolTutup.textContent = "Tutup";
+  tombolTutup.style.marginTop = "18px";
+
+  kotak.append(judul, isi, tombolTutup);
+  modal.appendChild(kotak);
+  document.body.appendChild(modal);
+
+  function tutupDetail() {
+    modal.remove();
+    pesananTerpilih = null;
+  }
+
+  tombolTutup.addEventListener("click", tutupDetail);
+
+  modal.addEventListener("click", function(event) {
+    if (event.target === modal) {
+      tutupDetail();
+    }
+  });
+
+  try {
+    const { data, error } = await db
+      .from("order_items")
+      .select("*")
+      .eq("order_id", pesanan.id);
+
+    if (error) throw error;
+
+    isi.textContent = "";
+
+    isi.append(
+      buatElemenDetail("Kode Pesanan", pesanan.order_code),
+      buatElemenDetail("Nama Pelanggan", pesanan.customer_name),
+      buatElemenDetail("Nomor Telepon", pesanan.customer_phone),
+      buatElemenDetail("Alamat", pesanan.customer_address),
+      buatElemenDetail("Metode Pembayaran", pesanan.payment_method),
+      buatElemenDetail("Tanggal", formatTanggal(pesanan.created_at)),
+      buatElemenDetail("Status", namaStatus(pesanan.status))
+    );
+
+    const garis = document.createElement("hr");
+    garis.style.margin = "16px 0";
+    garis.style.border = "0";
+    garis.style.borderTop = "1px solid #e7ece5";
+
+    isi.appendChild(garis);
+
+    const judulBarang = document.createElement("h4");
+    judulBarang.textContent = "Barang yang Dibeli";
+    judulBarang.style.marginBottom = "12px";
+
+    isi.appendChild(judulBarang);
+
+    if (!data || data.length === 0) {
+      isi.appendChild(
+        buatElemenDetail("Daftar Barang", "Tidak ada rincian barang.")
+      );
+    } else {
+      data.forEach((barang, index) => {
+        const bagian = document.createElement("div");
+        bagian.style.padding = "12px";
+        bagian.style.marginBottom = "10px";
+        bagian.style.border = "1px solid #e7ece5";
+        bagian.style.borderRadius = "12px";
+
+        bagian.append(
+          buatElemenDetail(
+            "Barang " + (index + 1),
+            barang.product_name
+          ),
+          buatElemenDetail("Ukuran", barang.size),
+          buatElemenDetail("Jumlah", barang.quantity),
+          buatElemenDetail(
+            "Harga Satuan",
+            formatRupiah(barang.unit_price)
+          ),
+          buatElemenDetail(
+            "Subtotal",
+            formatRupiah(barang.subtotal)
+          )
+        );
+
+        isi.appendChild(bagian);
+      });
+    }
+
+    const total = document.createElement("h3");
+    total.textContent = "Total: " + formatRupiah(pesanan.total_price);
+    total.style.marginTop = "16px";
+
+    isi.appendChild(total);
+
+  } catch (error) {
+    console.error("Detail pesanan:", error);
+
+    isi.textContent = "Gagal mengambil rincian pesanan.";
+
+    tampilkanNotifikasi(
+      "Gagal memuat detail pesanan.",
+      true
+    );
+  }
+}
+
+
+/* =====================================
+   40. AKSI DETAIL PADA TABEL PESANAN
+===================================== */
+
+el("daftarPesanan").addEventListener("click", function(event) {
+  const tombol = event.target.closest("[data-aksi-pesanan]");
+
+  if (!tombol) return;
+
+  if (tombol.dataset.aksiPesanan === "detail") {
+    tampilkanDetailPesanan(tombol.dataset.id);
+  }
+});
+
+/* =====================================
+   41. MEMPERBARUI STATUS PESANAN
+===================================== */
+
+const STATUS_PESANAN_VALID = [
+  "pending",
+  "paid",
+  "processing",
+  "shipped",
+  "completed",
+  "cancelled"
+];
+
+async function perbaruiStatusPesanan(id, statusBaru) {
+  if (!STATUS_PESANAN_VALID.includes(statusBaru)) {
+    tampilkanNotifikasi("Status pesanan tidak valid.", true);
+    return;
+  }
+
+  const pesanan = dataPesanan.find(item =>
+    String(item.id) === String(id)
+  );
+
+  if (!pesanan) {
+    tampilkanNotifikasi("Pesanan tidak ditemukan.", true);
+    return;
+  }
+
+  if (pesanan.status === statusBaru) {
+    tampilkanNotifikasi("Status tidak mengalami perubahan.");
+    return;
+  }
+
+  const tombol = document.querySelector(
+    `[data-simpan-status="${CSS.escape(String(id))}"]`
+  );
+
+  if (tombol) {
+    tombol.disabled = true;
+    tombol.textContent = "Menyimpan...";
+  }
+
+  try {
+    const { error } = await db
+      .from("orders")
+      .update({ status: statusBaru })
+      .eq("id", id);
+
+    if (error) throw error;
+
+    pesanan.status = statusBaru;
+
+    tampilkanPesanan();
+    await muatDashboardAwal();
+
+    tampilkanNotifikasi("Status pesanan berhasil diperbarui.");
+
+  } catch (error) {
+    console.error("Status pesanan:", error);
+
+    tampilkanNotifikasi(
+      error.message || "Gagal memperbarui status pesanan.",
+      true
+    );
+
+  } finally {
+    if (tombol) {
+      tombol.disabled = false;
+      tombol.textContent = "Perbarui";
+    }
+  }
+}
+
+
+/* =====================================
+   42. AKSI TOMBOL PERBARUI STATUS
+===================================== */
+
+el("daftarPesanan").addEventListener("click", function(event) {
+  const tombol = event.target.closest("[data-simpan-status]");
+
+  if (!tombol) return;
+
+  const id = tombol.dataset.simpanStatus;
+
+  const pilihan = el("daftarPesanan").querySelector(
+    `[data-status-pesanan="${CSS.escape(String(id))}"]`
+  );
+
+  if (!pilihan) return;
+
+  perbaruiStatusPesanan(id, pilihan.value);
+});
+
+  /* =====================================
+   43. MENGAMBIL DATA STOK
+===================================== */
+
+async function muatStok() {
+  const tabel = el("daftarStok");
+
+  tabel.innerHTML = `
+    <tr>
+      <td colspan="6" class="data-kosong">
+        Memuat data stok...
+      </td>
+    </tr>
+  `;
+
+  try {
+    const { data, error } = await db
+      .from("products")
+      .select("id, name, size, condition, stock, price, is_active")
+      .order("name", { ascending: true });
+
+    if (error) throw error;
+
+    dataProduk = dataProduk.length
+      ? dataProduk
+      : [];
+
+    tampilkanStok(data || []);
+
+  } catch (error) {
+    console.error("Stok:", error);
+
+    tabel.innerHTML = `
+      <tr>
+        <td colspan="6" class="data-kosong">
+          Gagal memuat data stok.
+        </td>
+      </tr>
+    `;
+
+    tampilkanNotifikasi("Gagal mengambil data stok.", true);
+  }
+}
+
+
+/* =====================================
+   44. MENAMPILKAN DATA STOK
+===================================== */
+
+function tampilkanStok(data = dataProduk) {
+  const tabel = el("daftarStok");
+
+  const pencarian = el("cariStok")
+    .value.trim().toLowerCase();
+
+  const filter = el("filterStok").value;
+
+  const produkStok = data.filter(produk => {
+    const jumlah = Number(produk.stock) || 0;
+
+    const cocokNama = String(produk.name || "")
+      .toLowerCase()
+      .includes(pencarian);
+
+    let cocokFilter = true;
+
+    if (filter === "habis") {
+      cocokFilter = jumlah === 0;
+    } else if (filter === "menipis") {
+      cocokFilter = jumlah > 0 && jumlah <= 5;
+    } else if (filter === "tersedia") {
+      cocokFilter = jumlah > 5;
+    }
+
+    return cocokNama && cocokFilter;
+  });
+
+  const totalJenis = data.length;
+
+  const totalStok = data.reduce(
+    (total, produk) => total + Math.max(0, Number(produk.stock) || 0),
+    0
+  );
+
+  const stokHabis = data.filter(
+    produk => Number(produk.stock) === 0
+  ).length;
+
+  const stokMenipis = data.filter(
+    produk => Number(produk.stock) > 0 &&
+      Number(produk.stock) <= 5
+  ).length;
+
+  el("totalJenisStok").textContent = totalJenis;
+  el("totalStok").textContent = totalStok;
+  el("stokMenipis").textContent = stokMenipis;
+  el("stokHabis").textContent = stokHabis;
+
+  if (produkStok.length === 0) {
+    tabel.innerHTML = `
+      <tr>
+        <td colspan="6" class="data-kosong">
+          Data stok tidak ditemukan.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tabel.innerHTML = produkStok.map(produk => {
+    const jumlah = Number(produk.stock) || 0;
+
+    let status = "Tersedia";
+
+    if (jumlah === 0) {
+      status = "Habis";
+    } else if (jumlah <= 5) {
+      status = "Menipis";
+    }
+
+    return `
+      <tr>
+        <td>
+          <strong>${escapeHTML(produk.name)}</strong>
+        </td>
+
+        <td>${escapeHTML(produk.size || "-")}</td>
+
+        <td>${escapeHTML(produk.condition || "-")}</td>
+
+        <td>${jumlah}</td>
+
+        <td>${formatRupiah(produk.price)}</td>
+
+        <td>
+          <span class="label-status">
+            ${status}
+          </span>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+
+/* =====================================
+   45. PENCARIAN DAN FILTER STOK
+===================================== */
+
+el("cariStok").addEventListener("input", async function() {
+  const { data, error } = await db
+    .from("products")
+    .select("id, name, size, condition, stock, price, is_active");
+
+  if (error) {
+    tampilkanNotifikasi("Gagal mencari stok.", true);
+    return;
+  }
+
+  tampilkanStok(data || []);
+});
+
+
+el("filterStok").addEventListener("change", async function() {
+  const { data, error } = await db
+    .from("products")
+    .select("id, name, size, condition, stock, price, is_active");
+
+  if (error) {
+    tampilkanNotifikasi("Gagal memfilter stok.", true);
+    return;
+  }
+
+  tampilkanStok(data || []);
+});
+
+
+/* =====================================
+   46. MUAT ULANG STOK
+===================================== */
+
+el("tombolMuatStok").addEventListener("click", async function() {
+  this.disabled = true;
+
+  await muatStok();
+
+  this.disabled = false;
+
+  tampilkanNotifikasi("Data stok diperbarui.");
+});
+
+  /* =====================================
+   47. MENGAMBIL DATA PEMBAYARAN
+===================================== */
+
+async function muatPembayaran() {
+  const tabel = el("daftarPembayaran");
+
+  tabel.innerHTML = `
+    <tr>
+      <td colspan="7" class="data-kosong">
+        Memuat transaksi pembayaran...
+      </td>
+    </tr>
+  `;
+
+  try {
+    const { data, error } = await db
+      .from("payment_transactions")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    dataPembayaran = data || [];
+
+    tampilkanPembayaran();
+
+  } catch (error) {
+    console.error("Pembayaran:", error);
+
+    tabel.innerHTML = `
+      <tr>
+        <td colspan="7" class="data-kosong">
+          Gagal memuat transaksi pembayaran.
+        </td>
+      </tr>
+    `;
+
+    tampilkanNotifikasi(
+      "Gagal mengambil data pembayaran.",
+      true
+    );
+  }
+}
+
+
+/* =====================================
+   48. MENAMPILKAN PEMBAYARAN
+===================================== */
+
+function tampilkanPembayaran() {
+  const tabel = el("daftarPembayaran");
+
+  const pencarian = el("cariPembayaran")
+    .value.trim().toLowerCase();
+
+  const filter = el("filterPembayaran").value;
+
+  const hasil = dataPembayaran.filter(transaksi => {
+    const teks = [
+      transaksi.id,
+      transaksi.order_id,
+      transaksi.status,
+      transaksi.payment_method,
+      transaksi.transaction_id
+    ].join(" ").toLowerCase();
+
+    const cocokPencarian = teks.includes(pencarian);
+
+    const cocokStatus =
+      !filter || transaksi.status === filter;
+
+    return cocokPencarian && cocokStatus;
+  });
+
+  if (hasil.length === 0) {
+    tabel.innerHTML = `
+      <tr>
+        <td colspan="7" class="data-kosong">
+          Transaksi tidak ditemukan.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tabel.innerHTML = hasil.map(transaksi => {
+    const status = transaksi.status || "-";
+
+    const nominal =
+      transaksi.amount ??
+      transaksi.total_amount ??
+      transaksi.gross_amount ??
+      0;
+
+    const kodeTransaksi =
+      transaksi.transaction_id ||
+      transaksi.id ||
+      "-";
+
+    return `
+      <tr>
+        <td>
+          ${escapeHTML(kodeTransaksi)}
+        </td>
+
+        <td>
+          ${escapeHTML(transaksi.order_id || "-")}
+        </td>
+
+        <td>
+          ${escapeHTML(transaksi.payment_method || "-")}
+        </td>
+
+        <td>
+          ${formatRupiah(nominal)}
+        </td>
+
+        <td>
+          <span class="label-status">
+            ${escapeHTML(namaStatus(status))}
+          </span>
+        </td>
+
+        <td>
+          ${formatTanggal(transaksi.created_at)}
+        </td>
+
+        <td>
+          <button
+            class="tombol-detail"
+            data-detail-pembayaran="${escapeHTML(transaksi.id)}"
+          >
+            Detail
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+
+/* =====================================
+   49. PENCARIAN DAN FILTER PEMBAYARAN
+===================================== */
+
+el("cariPembayaran").addEventListener(
+  "input",
+  tampilkanPembayaran
+);
+
+el("filterPembayaran").addEventListener(
+  "change",
+  tampilkanPembayaran
+);
+
+
+/* =====================================
+   50. MUAT ULANG PEMBAYARAN
+===================================== */
+
+el("tombolMuatPembayaran").addEventListener(
+  "click",
+  async function() {
+    this.disabled = true;
+
+    await muatPembayaran();
+
+    this.disabled = false;
+  }
+);
+
+
+/* =====================================
+   51. DETAIL PEMBAYARAN
+===================================== */
+
+el("daftarPembayaran").addEventListener(
+  "click",
+  function(event) {
+    const tombol = event.target.closest(
+      "[data-detail-pembayaran]"
+    );
+
+    if (!tombol) return;
+
+    const transaksi = dataPembayaran.find(item =>
+      String(item.id) === tombol.dataset.detailPembayaran
+    );
+
+    if (!transaksi) {
+      tampilkanNotifikasi(
+        "Transaksi tidak ditemukan.",
+        true
+      );
+      return;
+    }
+
+    const informasi = [
+      "ID Transaksi: " + (transaksi.id || "-"),
+      "ID Pesanan: " + (transaksi.order_id || "-"),
+      "Metode: " + (transaksi.payment_method || "-"),
+      "Nominal: " + formatRupiah(
+        transaksi.amount ??
+        transaksi.total_amount ??
+        transaksi.gross_amount ??
+        0
+      ),
+      "Status: " + namaStatus(transaksi.status),
+      "Tanggal: " + formatTanggal(transaksi.created_at)
+    ].join("\n");
+
+    bukaModalKonfirmasi(
+      "Detail Pembayaran",
+      informasi,
+      "Tutup"
+    );
+
+    el("setujuKonfirmasi").classList.add("hidden");
+  }
+);
+  
+</script>
+
+</body>
+</html>
